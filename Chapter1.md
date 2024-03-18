@@ -8,16 +8,17 @@
   2、由于忽略了Token之间的顺序，导致部分语义丢失。
 ## 2.语言模型师怎么回事
 - 语言模型就是利用自然语言文本构建的，根据给定文本，输出对应文本的模型。即通过已有的Token预测接下来的Token。
-- N-Gram模型：根据前面（N-1）个Token来预测下一个Token。
+- **N-Gram模型**：根据前面（N-1）个Token来预测下一个Token。
 - RNN，Recurrent Neural Network，中文叫循环神经网络。RNN 模型与其他神经网络不同的地方在于，它的节点之间存在循环连接，这使得它能够记住之前的信息，并将它们应用于当前的输入。这种记忆能力使得 RNN 在处理时间序列数据时特别有用，例如预测未来的时间序列数据、自然语言处理等。通俗地说，RNN 就像一个具有记忆功能的人，可以根据之前的经验和知识对当前的情况做出反应，并预测未来的发展趋势。
 ## 3.Transform
- &emsp;&emsp; Transformer是一种Encoder-Decoder架构，其最重要的核心就是Self-Attention机制，中文也叫自注意力。简单来说，就是在语言模型建模过程中，把注意力放在那些重要的Token上。
- &emsp;&emsp; Transformer，简单来说就是先把输入映射到Encoder，可以把Encoder先想象成RNN，Decoder也可以想象成RNN。这样，左边负责编码，右边则负责解码。这里面不同的是，左边因为我们是知道数据的，所以建模时可以同时利用当前Token的历史Token和未来（前面的）Token；但解码时，因为是一个Token一个Token输出来的，所以只能根据历史Token以及Encoder的Token表示进行建模，而不能利用未来的Token。
+ &emsp;&emsp; **Transformer**是一种Encoder-Decoder架构，其最重要的核心就是Self-Attention机制，中文也叫自注意力。简单来说，就是在语言模型建模过程中，把注意力放在那些重要的Token上。
+ &emsp;&emsp; **Transformer**，简单来说就是先把输入映射到Encoder，可以把Encoder先想象成RNN，Decoder也可以想象成RNN。这样，左边负责编码，右边则负责解码。这里面不同的是，左边因为我们是知道数据的，所以建模时可以同时利用当前Token的历史Token和未来（前面的）Token；但解码时，因为是一个Token一个Token输出来的，所以只能根据历史Token以及Encoder的Token表示进行建模，而不能利用未来的Token。
  &emsp;&emsp; 在NLP领域，一般也会把它们分别叫做NLU（Natural Language Understanding，自然语言理解）任务和NLG（Natural Language Generation，自然语言生成）任务。
 ## 4.GPT
  &emsp;&emsp; GPT，Generative Pre-trained Transformer，中文叫「生成式预训练Transformer」。GPT模型从1到4，一共经历了5个版本，中间有个ChatGPT是3.5版。
-Zero-Shot是指直接给模型任务输入让它输出任务结果；Few-Shot是给模型提供一些示例，然后再给出任务，让它给出输出结果。
-InstructGPT的整个流程，共三个步骤：
+- Zero-Shot是指直接给模型任务输入让它输出任务结果
+- Few-Shot是给模型提供一些示例，然后再给出任务，让它给出输出结果。
+**InstructGPT**的整个流程，共三个步骤：
 - Step1：SFT，Supervised Fine-Tuning，有监督微调。顾名思义，它是在有监督（有标注）数据上微调训练得到的。这里的监督数据其实就是输入Prompt，输出相应的回复，只不过这里的回复是人工编写的。这个工作要求比一般标注要高，其实算是一种创作了。
 - Step2：RM，Reward Model，奖励模型。具体来说，一个Prompt丢给前一步的SFT，输出若干个（4-9个）回复，由标注人员对这些回复进行排序。然后从4-9个中每次取2个，因为是有序的，就可以用来训练这个奖励模型，让模型学习到这个好坏评价。这一步非常关键，它就是所谓的Human Feedback，引导下一步模型的进化方向。
 - Step3：RL，Reinforcement Learning，强化学习，使用PPO策略进行训练。PPO，Proximal Policy Optimization，近端策略优化，是一种强化学习优化方法，它背后的主要思想是避免每次太大的更新，提高训练的稳定性。具体过程如下：首先需要初始化一个语言模型，然后丢给它一个Prompt，它生成一个回复，上一步的RM给这个回复一个打分，这个打分回传给模型更新参数。这里的这个模型在强化学习视角下就是一个策略。这一步有个很重要的动作，就是更新模型时会考虑模型每一个Token的输出和第一步SFT输出之间的差异性，要让它俩尽量相似。这是为了缓解强化学习可能的过度优化。
